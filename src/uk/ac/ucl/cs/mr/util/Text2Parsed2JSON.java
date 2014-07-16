@@ -4,6 +4,7 @@ import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.util.*;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.trees.*;
+
 import java.io.*;
 import java.util.*;
 
@@ -26,6 +27,12 @@ public class Text2Parsed2JSON {
     	return result.toString();
     }
     
+    // dummy function that returns the same text that was passed as input.
+    // to be over-ridden to do more interesting things. might need to add to the initialization.
+    private String filterText(String text){
+    	return text;
+    }
+    
     public Text2Parsed2JSON(){
 		// Initialize the parser:
 		Properties parser_props = new Properties();
@@ -36,17 +43,22 @@ public class Text2Parsed2JSON {
     	
     }
     
-    // this takes text, runs the main processor and returns the result 
-    public JSONArray processText(String text){
+    // this takes text, runs the main processor and returns the Stanford annotations
+    // for the sentences kept 
+    public Annotation processText2Annotations(String text){
+    	// filter the text
+    	String filteredText = filterText(text); 
     	// create an empty Annotation just with the given text
-        Annotation annotatedText = new Annotation(text);
-        
-        // TODO: what about the filtering?
-        // run all Annotators on this text
-        mainPipeline.annotate(annotatedText);    	
-    	
-        // TODO: convert this into a sensible JSON form
-        // TODO: separate function, just from Stanford to JSON?
+        Annotation annotatedText = new Annotation(filteredText);
+                
+        mainPipeline.annotate(annotatedText);
+
+        return annotatedText;
+    }
+
+    // TODO: convert this into a sensible JSON form
+    public JSONArray processAnnotations2JSON(Annotation annotatedText){
+    
     	JSONArray result = null;
     	return result;
     }
@@ -56,7 +68,8 @@ public class Text2Parsed2JSON {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		// initialize
+		Text2Parsed2JSON processor = new Text2Parsed2JSON();
 		
 		// get the directory with the text files
 		File extractsDirectory = new File(args[0]);
@@ -65,24 +78,32 @@ public class Text2Parsed2JSON {
 		File outputDirectory = new File(args[1]);
 		outputDirectory.mkdir();
 
-		// TODO: check from here 
 		// get a list of files:
 		File[] textFileNames = extractsDirectory.listFiles();
 
 		// For each text file:
 		for (int i = 0; i < textFileNames.length; i++){
 			
-			
 			// First get the filename
 			String filename = textFileNames[i].getName();
-			// Read in the text
 			System.out.println(textFileNames[i]);
+			// Read in the text
+			String text;
+			try {
+				text = readTextFromFile(textFileNames[i]);
+				// process
+				Annotation annotatedText = processor.processText2Annotations(text);
+				JSONArray JSONsentences = processor.processAnnotations2JSON(annotatedText);
+				    
+				// Create the file for the output
+				File JSONFile = new File(outputDirectory, textFileNames[i] + ".json");
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			    
-			// Create the file for the output
-			File labeledFile = new File(outputDirectory, entityName + "_" + slotFiller);
-			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(labeledFile), "UTF-8"));
-			    
-			String text = readTextFromFile(textFileNames[i]);
+
 		
 		}
 	}
