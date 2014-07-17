@@ -3,7 +3,9 @@ package uk.ac.ucl.cs.mr.util;
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.util.*;
 import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.*;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.*;
 
@@ -21,6 +23,9 @@ public class Text2Parsed2JSON {
 		public String lemma;
 		public String pos;
 		public String ner;
+		
+		public MyToken(){};
+		
 	}
 	
 	public class MyDependency{
@@ -28,13 +33,18 @@ public class Text2Parsed2JSON {
 		public int dep;
 		public String label;
 		
+		public MyDependency(){};
 	}
 	
 	public class MySentence{
 		
-		public List<MyToken> tokens;
-		public List<MyDependency> dependencies;
+		public ArrayList<MyToken> tokens;
+		public ArrayList<MyDependency> dependencies;
 		
+		public MySentence(){
+			tokens = new ArrayList<MyToken>();
+			dependencies = new ArrayList<MyDependency>();
+		}
 		
 	}
 
@@ -62,8 +72,10 @@ public class Text2Parsed2JSON {
 		// Initialize the parser:
 		Properties parser_props = new Properties();
 		parser_props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
-		parser_props.put("tokenize.whitespace", "true");
-		parser_props.put("ssplit.isOneSentence", "true");
+		// I assume that longer sentences are unlikely to be useful.
+		parser_props.put("parse.maxlen", 80);
+		//parser_props.put("tokenize.whitespace", "true");
+		//parser_props.put("ssplit.isOneSentence", "true");
 		mainPipeline = new StanfordCoreNLP(parser_props);		
     	
     }
@@ -81,35 +93,62 @@ public class Text2Parsed2JSON {
         return annotatedText;
     }
 
-    // TODO: convert this into a sensible JSON form
-    public JSONArray processAnnotations2JSON(Annotation annotatedText){
+
+    public String processAnnotations2JSON(Annotation annotatedText){
     	
-    	Array JSONSentences = new Array();
+    	// initialize the sentences array
+    	ArrayList<MySentence> mySentences = new ArrayList<MySentence>();
     	
     	// get the sentences 
         List<CoreMap> sentences = annotatedText.get(SentencesAnnotation.class);
         
         for(CoreMap sentence: sentences) {
+        	MySentence newSentence = new MySentence();
           // traversing the words in the current sentence
           // a CoreLabel is a CoreMap with additional token-specific methods
           for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
+        	  MyToken newToken = new MyToken();
             // this is the text of the token
             String word = token.get(TextAnnotation.class);
             // this is the POS tag of the token
             String pos = token.get(PartOfSpeechAnnotation.class);
             // this is the NER label of the token
-            String ne = token.get(NamedEntityTagAnnotation.class);       
+            String ne = token.get(NamedEntityTagAnnotation.class);
+            // this is the lemma
+            String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
+            newToken.lemma = lemma;
+            newToken.pos = pos;
+            newToken.ner = ne;
+            newToken.word = word;
+            
+            newSentence.tokens.add(newToken);
           }
 
 
           // this is the Stanford dependency graph of the current sentence
           SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+          System.out.print(dependencies.toString("plain"));
+          
+          //Set<SemanticGraphEdge> allEdges = dependencies.getEdgeSet();
+          
+          for (SemanticGraphEdge edge: dependencies.edgeIterable()){
+        	  MyDependency dep = new MyDependency();
+        	  // remember to subtract one so that the first word starts at 0
+        	  dep.head = edge.getGovernor().index() - 1;
+        	  dep.dep = edge.getDependent().index() - 1;
+        	  dep.label = edge.getRelation().toString();
+        	  
+        	  newSentence.dependencies.add(dep);
+          }
+          
+          mySentences.add(newSentence);  
         }
         
         
+    	Gson gson = new Gson();
     	
     	
-    	return JSONSentences;
+    	return gson.toJson(mySentences);
     }
 
 	
@@ -134,7 +173,7 @@ public class Text2Parsed2JSON {
 		for (int i = 0; i < textFileNames.length; i++){
 			
 			// First get the filename
-			String filename = textFileNames[i].getName();
+			//String filename = textFileNames[i].getName();
 			System.out.println(textFileNames[i]);
 			// Read in the text
 			String text;
@@ -142,7 +181,8 @@ public class Text2Parsed2JSON {
 				text = readTextFromFile(textFileNames[i]);
 				// process
 				Annotation annotatedText = processor.processText2Annotations(text);
-				JSONArray JSONsentences = processor.processAnnotations2JSON(annotatedText);
+				String JSONsentences = processor.processAnnotations2JSON(annotatedText);
+				System.out.print(JSONsentences);
 				    
 				// Create the file for the output
 				File JSONFile = new File(outputDirectory, textFileNames[i] + ".json");

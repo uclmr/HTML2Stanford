@@ -12,18 +12,18 @@ public class Text2JSON {
 	
 	public static interface Filter { 
 		// takes as argument a sentence parsed up to a point
-	    public boolean goodToParse(sentence Sent);
+	    public boolean goodToParse(CoreMap Sent);
 	}
 	
-	public static class alwaysTrue implements Filter { 
-	    public boolean goodToParse(sentence Sent) {
+	public static class AlwaysTrue implements Filter { 
+	    public boolean goodToParse(CoreMap Sent) {
 	        System.out.println("Always true");
 	        return true;
 	    } 
 	}
 	
 	public static class AtLeastOneLocationOneNumber implements Filter { 
-	    public boolean goodToParse(sentence Sent) {
+	    public boolean goodToParse(CoreMap Sent) {
 	        System.out.println("Always true");
 	        return true;
 	    } 
@@ -39,6 +39,8 @@ public class Text2JSON {
     	}
     	return result.toString();
     }
+    
+    
 
 
 	/**
@@ -56,7 +58,11 @@ public class Text2JSON {
 		outputDirectory.mkdir();
 		
 		// check the filtering option
-		
+		Filter sentenceFilter;
+		switch (args[2]){
+		case "all": sentenceFilter = new AlwaysTrue();
+		case "OneLocOneNumber": sentenceFilter = new AtLeastOneLocationOneNumber();
+		}
 		
 		// TODO: separate function
 		// Initialize the sentence splitter
