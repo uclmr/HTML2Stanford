@@ -2,16 +2,41 @@ package uk.ac.ucl.cs.mr.util;
 
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.util.*;
-import edu.stanford.nlp.ling.*;
-import edu.stanford.nlp.trees.*;
+import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.*;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.CoreAnnotations.*;
 
 import java.io.*;
 import java.util.*;
 
-import org.json.*;
+import com.google.gson.*;
+
 
 
 public class Text2Parsed2JSON {
+	
+	public class MyToken{
+		public String word;
+		public String lemma;
+		public String pos;
+		public String ner;
+	}
+	
+	public class MyDependency{
+		public int head;
+		public int dep;
+		public String label;
+		
+	}
+	
+	public class MySentence{
+		
+		public List<MyToken> tokens;
+		public List<MyDependency> dependencies;
+		
+		
+	}
 
 	// this holds the main pipeline for the processing 
 	private StanfordCoreNLP mainPipeline;
@@ -58,9 +83,33 @@ public class Text2Parsed2JSON {
 
     // TODO: convert this into a sensible JSON form
     public JSONArray processAnnotations2JSON(Annotation annotatedText){
-    
-    	JSONArray result = null;
-    	return result;
+    	
+    	Array JSONSentences = new Array();
+    	
+    	// get the sentences 
+        List<CoreMap> sentences = annotatedText.get(SentencesAnnotation.class);
+        
+        for(CoreMap sentence: sentences) {
+          // traversing the words in the current sentence
+          // a CoreLabel is a CoreMap with additional token-specific methods
+          for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
+            // this is the text of the token
+            String word = token.get(TextAnnotation.class);
+            // this is the POS tag of the token
+            String pos = token.get(PartOfSpeechAnnotation.class);
+            // this is the NER label of the token
+            String ne = token.get(NamedEntityTagAnnotation.class);       
+          }
+
+
+          // this is the Stanford dependency graph of the current sentence
+          SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+        }
+        
+        
+    	
+    	
+    	return JSONSentences;
     }
 
 	
