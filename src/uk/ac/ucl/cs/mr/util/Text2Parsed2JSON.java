@@ -71,7 +71,7 @@ public class Text2Parsed2JSON {
     public Text2Parsed2JSON(){
 		// Initialize the parser:
 		Properties parser_props = new Properties();
-		parser_props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
+		parser_props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
 		// I assume that longer sentences are unlikely to be useful.
 		parser_props.put("parse.maxlen", 80);
 		//parser_props.put("tokenize.whitespace", "true");
@@ -127,7 +127,7 @@ public class Text2Parsed2JSON {
 
           // this is the Stanford dependency graph of the current sentence
           SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-          System.out.print(dependencies.toString("plain"));
+         //System.out.print(dependencies.toString("plain"));
           
           //Set<SemanticGraphEdge> allEdges = dependencies.getEdgeSet();
           
@@ -182,13 +182,17 @@ public class Text2Parsed2JSON {
 				// process
 				Annotation annotatedText = processor.processText2Annotations(text);
 				String JSONsentences = processor.processAnnotations2JSON(annotatedText);
-				System.out.print(JSONsentences);
+				//System.out.println(JSONsentences);
 				    
 				// Create the file for the output
-				File JSONFile = new File(outputDirectory, textFileNames[i] + ".json");
-				
+				File JSONFile = new File(outputDirectory, textFileNames[i].getName() + ".json");
+				//System.out.println(JSONFile.getPath());
+				//System.out.println(JSONFile.getName());
+				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(JSONFile), "utf-8"));
+				out.write(JSONsentences);
+				out.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				// TODO Auto-generated catch block 
 				e.printStackTrace();
 			}
 			    
