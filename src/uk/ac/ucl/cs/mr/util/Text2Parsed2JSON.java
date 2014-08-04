@@ -126,6 +126,8 @@ public class Text2Parsed2JSON {
 
 
           // this is the Stanford dependency graph of the current sentence
+          // If a tree with all the tokens is required, use BasicDependenciesAnnotation
+          // But the one that are commonly the best for IE are CollapsedCCProcessedDependenciesAnnotation (careful, they are not even DAGs)
           SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
          //System.out.print(dependencies.toString("plain"));
           
