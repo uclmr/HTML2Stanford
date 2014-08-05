@@ -15,7 +15,10 @@ public class HTML2Text{
 	 */
 	public static void convert(File htmlFileName, File extractsDirectory) throws BoilerpipeProcessingException, IOException{
 	    FileReader HTMLReader = new FileReader(htmlFileName);
-	    String text =  KeepEverythingExtractor.INSTANCE.getText(HTMLReader);
+	    // Article extractor is the default, throws away a lot of the garbage.
+	    // If higher recall is needed, go for the KeepEverythingExtractor instead.
+	    //String text =  KeepEverythingExtractor.INSTANCE.getText(HTMLReader);
+	    String text =  ArticleExtractor.INSTANCE.getText(HTMLReader);
 	    // Create a file to save the text:
 	    BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(extractsDirectory, htmlFileName.getName())), "UTF-8"));
 		
