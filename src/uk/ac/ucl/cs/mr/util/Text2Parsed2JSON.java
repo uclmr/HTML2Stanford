@@ -56,7 +56,8 @@ public class Text2Parsed2JSON {
     	String line;
     	StringBuffer result = new StringBuffer();
     	while ((line = textFile.readLine() ) != null){
-    		result.append(line);
+    		// added the new line back
+    		result.append(line + "\n");
     	}
     	textFile.close();
     	return result.toString();
@@ -128,7 +129,7 @@ public class Text2Parsed2JSON {
           // this is the Stanford dependency graph of the current sentence
           // If a tree with all the tokens is required, use BasicDependenciesAnnotation
           // But the one that are commonly the best for IE are CollapsedCCProcessedDependenciesAnnotation (careful, they are not even DAGs)
-          SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+          SemanticGraph dependencies = sentence.get(BasicDependenciesAnnotation.class);
          //System.out.print(dependencies.toString("plain"));
           
           //Set<SemanticGraphEdge> allEdges = dependencies.getEdgeSet();
