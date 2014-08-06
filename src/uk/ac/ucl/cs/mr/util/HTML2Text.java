@@ -22,17 +22,12 @@ public class HTML2Text{
 	    // Create a file to save the text:
 	    BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(extractsDirectory, htmlFileName.getName())), "UTF-8"));
 		
-	    // make sure that there is always a period in the end of each line
+	    // The second newline is to help the syntactic parser 
 	    Scanner scanner = new Scanner(text);
 	    while (scanner.hasNextLine()) {
-		String line = scanner.nextLine();
-		// process the line
-		if (!(line.endsWith(".") || line.endsWith("!") || line.endsWith("?")))
-		    {
-			line += " .";
-		    }
-		    
+		String line = scanner.nextLine();		    
 		out.write(line);
+		out.newLine();
 		out.newLine();
 	    }
 	    out.close();
