@@ -171,6 +171,7 @@ public class Text2Parsed2JSON {
 
 		// get a list of files:
 		File[] textFileNames = extractsDirectory.listFiles();
+		System.out.println("Files to process:" +  textFileNames.length);
 
 		// For each text file:
 		for (int i = 0; i < textFileNames.length; i++){
