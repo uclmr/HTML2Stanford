@@ -75,6 +75,8 @@ public class Text2Parsed2JSON {
 		parser_props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
 		// I assume that longer sentences are unlikely to be useful.
 		parser_props.put("parse.maxlen", 80);
+		// This is meant to be the default behaviour but somehow it is not.
+		parser_props.put("ssplit.newlineIsSentenceBreak", "two");
 		//parser_props.put("tokenize.whitespace", "true");
 		//parser_props.put("ssplit.isOneSentence", "true");
 		mainPipeline = new StanfordCoreNLP(parser_props);		
@@ -129,7 +131,7 @@ public class Text2Parsed2JSON {
           // this is the Stanford dependency graph of the current sentence
           // If a tree with all the tokens is required, use BasicDependenciesAnnotation
           // But the one that are commonly the best for IE are CollapsedCCProcessedDependenciesAnnotation (careful, they are not even DAGs)
-          SemanticGraph dependencies = sentence.get(BasicDependenciesAnnotation.class);
+          SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
          //System.out.print(dependencies.toString("plain"));
           
           //Set<SemanticGraphEdge> allEdges = dependencies.getEdgeSet();
